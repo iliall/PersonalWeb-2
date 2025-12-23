@@ -49,7 +49,7 @@ export default function Home() {
         </h1>
 
         <p className="text-lg md:text-xl leading-relaxed mb-10 font-sans opacity-90">
-          I'm a Computer Science student at university of Waterloo.
+          I&apos;m a Computer Science student at university of Waterloo.
         </p>
 
         <div className="flex gap-8 flex-wrap">

@@ -133,6 +133,7 @@ export default function DitherPattern({ className = '', theme = 'dark', color = 
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('resize', handleResize);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
