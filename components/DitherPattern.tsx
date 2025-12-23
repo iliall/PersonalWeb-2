@@ -11,9 +11,11 @@ const ditherMatrix = [
 
 interface DitherPatternProps {
   className?: string;
+  theme?: 'dark' | 'light' | 'green';
+  color?: string;
 }
 
-export default function DitherPattern({ className = '' }: DitherPatternProps) {
+export default function DitherPattern({ className = '', theme = 'dark', color = '#FFFFFF' }: DitherPatternProps) {
   const canvasRef = useRef<HTMLPreElement>(null);
   const mouseX = useRef(0);
   const mouseY = useRef(0);
@@ -136,11 +138,12 @@ export default function DitherPattern({ className = '' }: DitherPatternProps) {
   return (
     <pre
       ref={canvasRef}
-      className={`fixed top-0 left-0 w-screen h-screen min-h-screen font-mono text-[8px] whitespace-pre overflow-hidden text-white opacity-30 pointer-events-none z-[1] ${className}`}
+      className={`fixed top-0 left-0 w-screen h-screen min-h-screen font-mono text-[8px] whitespace-pre overflow-hidden opacity-30 pointer-events-none z-[1] transition-colors duration-500 ${className}`}
       style={{
         fontFamily: "'Courier New', monospace",
         lineHeight: '10px',
         letterSpacing: '0',
+        color: color,
       }}
     />
   );
