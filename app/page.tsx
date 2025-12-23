@@ -161,20 +161,6 @@ export default function Home() {
 
         <div className="flex gap-6 flex-wrap">
           <a
-            href="https://iliall.github.io"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`text-sm md:text-base flex items-center gap-2 no-underline transition-opacity duration-300 ${colors.linkHover}`}
-            style={{ color: colors.text }}
-          >
-            portfolio
-            <span
-              className="inline-block rotate-[-45deg] border-r-2 border-b-2 p-[2px] ml-[2px]"
-              style={{ borderColor: colors.text }}
-            />
-          </a>
-
-          <a
             href="https://github.com/iliall"
             target="_blank"
             rel="noopener noreferrer"
