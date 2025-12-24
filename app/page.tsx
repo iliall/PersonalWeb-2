@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import DitherPattern from '@/components/DitherPattern';
 import ThemeSwitcher, { Theme } from '@/components/ThemeSwitcher';
 
@@ -44,13 +45,25 @@ export default function Home() {
       <ThemeSwitcher onThemeChange={setTheme} />
 
       <div className="relative z-10 max-w-[800px] px-10 text-left">
-        <h1 className="text-4xl md:text-5xl font-normal mb-3 tracking-tighter">
-          Ilia Alenabi
-        </h1>
-
-        <p className="text-base md:text-lg leading-relaxed mb-6 font-sans opacity-80">
-          CS + AI at Waterloo | ML & Compiler Engineering
-        </p>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden border-2 transition-all duration-300" style={{ borderColor: colors.text }}>
+            <Image
+              src="/profile.jpg"
+              alt="Ilia Alenabi"
+              fill
+              className="object-cover"
+              priority
+            />
+          </div>
+          <div>
+            <h1 className="text-4xl md:text-5xl font-normal tracking-tighter">
+              Ilia Alenabi
+            </h1>
+            <p className="text-base md:text-lg leading-relaxed mt-2 font-sans opacity-80">
+              CS + AI at Waterloo | ML & Compiler Engineering
+            </p>
+          </div>
+        </div>
 
         <div className="mb-6">
           <h2 className="text-sm md:text-base font-semibold mb-2 opacity-70 uppercase tracking-wide">Experience</h2>
@@ -66,6 +79,7 @@ export default function Home() {
               >
                 Cerebras
               </a>
+              {' '}- Model Bringup
             </li>
             <li className="text-sm md:text-base">
               Compiler Engineer @{' '}
@@ -78,6 +92,7 @@ export default function Home() {
               >
                 Huawei Canada
               </a>
+              {' '}- Software Cache
             </li>
             <li className="text-sm md:text-base">
               Data Engineer @{' '}
@@ -90,6 +105,7 @@ export default function Home() {
               >
                 Cohere
               </a>
+              {' '}- Model Evaluation and Data Annotation
             </li>
             <li className="text-sm md:text-base">
               Software Engineer @{' '}
@@ -102,6 +118,7 @@ export default function Home() {
               >
                 Questrade
               </a>
+              {' '}- MLOps Pipeline
             </li>
             <li className="text-sm md:text-base">
               Data Scientist @{' '}
@@ -114,6 +131,7 @@ export default function Home() {
               >
                 Silverberry
               </a>
+              {' '}- AI for Diabetic Patients
             </li>
           </ul>
         </div>
@@ -132,7 +150,16 @@ export default function Home() {
               >
                 Vector Institute
               </a>
-              {' '}- Interpreting Vision-Language Models
+              {' '}- {' '}
+              <a
+                href="https://aclanthology.org/2025.emnlp-demos.68/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`underline decoration-1 underline-offset-2 transition-opacity duration-300 ${colors.linkHover}`}
+                style={{ color: colors.text }}
+              >
+                Interpreting Vision-Language Models
+              </a>
             </li>
             <li className="text-sm md:text-base">
               Research Intern @{' '}
@@ -145,7 +172,16 @@ export default function Home() {
               >
                 Pingoo AI
               </a>
-              {' '}- Trustworthy Generative AI for Diabetes Care
+              {' '}- {' '}
+              <a
+                href="https://journals.sagepub.com/doi/abs/10.1177/19322968241253568"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`underline decoration-1 underline-offset-2 transition-opacity duration-300 ${colors.linkHover}`}
+                style={{ color: colors.text }}
+              >
+                Trustworthy Generative AI for Diabetes Care
+              </a>
             </li>
           </ul>
         </div>
@@ -153,9 +189,8 @@ export default function Home() {
         <div className="mb-8">
           <h2 className="text-sm md:text-base font-semibold mb-2 opacity-70 uppercase tracking-wide">Achievements</h2>
           <ul className="list-disc list-inside space-y-1.5 opacity-90">
-            <li className="text-sm md:text-base">4.0 GPA - President&apos;s Scholarship of Distinction</li>
-            <li className="text-sm md:text-base">National Math Olympiad - Silver Medal</li>
-            <li className="text-sm md:text-base">Combinatorics Olympiad - Silver Medal</li>
+            <li className="text-sm md:text-base">National Mathematical Olympiad - Silver Medal</li>
+            <li className="text-sm md:text-base">International Combinatorics Olympiad - Silver Medal</li>
           </ul>
         </div>
 
