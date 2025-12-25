@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import DitherPattern from '@/components/DitherPattern';
 import ThemeSwitcher, { Theme } from '@/components/ThemeSwitcher';
@@ -8,6 +8,79 @@ import { Cerebras, Huawei, Cohere } from '@lobehub/icons';
 
 export default function Home() {
   const [theme, setTheme] = useState<Theme>('dark');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleExpand = () => {
+    if (containerRef.current) {
+      // Capture current dimensions before expanding
+      const currentHeight = containerRef.current.offsetHeight;
+      const currentWidth = containerRef.current.offsetWidth;
+
+      // Set explicit dimensions
+      containerRef.current.style.width = `${currentWidth}px`;
+      containerRef.current.style.height = `${currentHeight}px`;
+
+      // Force a reflow
+      containerRef.current.offsetHeight;
+
+      // Now expand
+      setIsExpanded(true);
+    }
+  };
+
+  const handleCollapse = () => {
+    if (containerRef.current && contentRef.current) {
+      // Step 1: Capture current expanded dimensions
+      const expandedWidth = containerRef.current.offsetWidth;
+      const expandedHeight = containerRef.current.offsetHeight;
+
+      // Step 2: Lock to current expanded size
+      containerRef.current.style.width = `${expandedWidth}px`;
+      containerRef.current.style.height = `${expandedHeight}px`;
+
+      // Force reflow to ensure styles are applied
+      containerRef.current.offsetHeight;
+
+      // Step 3: Make content visible to measure natural size
+      const currentOpacity = contentRef.current.style.opacity;
+      contentRef.current.style.opacity = '1';
+      contentRef.current.style.pointerEvents = 'auto';
+
+      // Step 4: Measure natural content dimensions
+      const naturalHeight = contentRef.current.offsetHeight;
+      const naturalWidth = contentRef.current.offsetWidth;
+
+      // Restore original opacity
+      contentRef.current.style.opacity = currentOpacity;
+      contentRef.current.style.pointerEvents = '';
+
+      // Step 5: Calculate target dimensions with padding
+      const targetWidth = Math.min(naturalWidth + 80, 800);
+      const targetHeight = naturalHeight + 64;
+
+      // Step 6: Start the transition
+      requestAnimationFrame(() => {
+        if (containerRef.current) {
+          // Set target dimensions (CSS transition will animate this)
+          containerRef.current.style.width = `${targetWidth}px`;
+          containerRef.current.style.height = `${targetHeight}px`;
+
+          // Also trigger content fade-in
+          setIsExpanded(false);
+
+          // Step 7: Clean up explicit styles after transition
+          setTimeout(() => {
+            if (containerRef.current) {
+              containerRef.current.style.width = '';
+              containerRef.current.style.height = '';
+            }
+          }, 500);
+        }
+      });
+    }
+  };
 
   const getThemeColors = () => {
     switch (theme) {
@@ -56,7 +129,25 @@ export default function Home() {
       <DitherPattern theme={theme} color={colors.patternColor} />
       <ThemeSwitcher onThemeChange={setTheme} />
 
-      <div className="relative z-10 max-w-[800px] px-10 py-8 text-left rounded-2xl" style={{ backgroundColor: getBackgroundColor(), backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
+      <div
+        ref={containerRef}
+        className={`relative z-10 px-10 py-8 text-left rounded-2xl ${!isExpanded ? 'max-w-[800px]' : ''}`}
+        style={{
+          backgroundColor: getBackgroundColor(),
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          ...(isExpanded && {
+            width: '85vw',
+            height: '80vh',
+          }),
+          transition: 'width 500ms ease-in-out, height 500ms ease-in-out',
+        }}
+      >
+        <div
+          ref={contentRef}
+          className="flex flex-col h-full"
+        >
+        <div className={`transition-opacity duration-500 ${isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-4 mb-6">
           <div className="relative w-24 h-24 md:w-32 md:h-32 rounded-lg overflow-hidden border-2 transition-all duration-300" style={{ borderColor: colors.text }}>
             <Image
@@ -186,8 +277,10 @@ export default function Home() {
             <li className="text-sm md:text-base">International Combinatorics Olympiad - Silver Medal</li>
           </ul>
         </div>
+        </div>
 
-        <div className="flex gap-6 flex-wrap justify-center">
+        {/* Social icons - stay visible, move to bottom when expanded */}
+        <div className={`flex gap-6 flex-wrap justify-center ${isExpanded ? 'mt-auto' : ''}`}>
           <a
             href="https://github.com/iliall"
             target="_blank"
@@ -249,7 +342,43 @@ export default function Home() {
               style={{ borderColor: colors.text }}
             />
           </a>
+
+          <a
+            onClick={isExpanded ? handleCollapse : handleExpand}
+            className={`text-sm md:text-base flex items-center gap-2 no-underline transition-opacity duration-300 cursor-pointer ${colors.linkHover}`}
+            style={{ color: colors.text }}
+          >
+            {isExpanded ? (
+              <>
+                {/* Arrow on LEFT when expanded */}
+                <span
+                  className="inline-block rotate-[135deg] border-r-2 border-b-2 p-[2px]"
+                  style={{ borderColor: colors.text }}
+                />
+                {/* Globe icon */}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="8" cy="8" r="6"/>
+                  <path d="M2 8h12M8 2a10.5 10.5 0 0 1 2.5 6 10.5 10.5 0 0 1-2.5 6 10.5 10.5 0 0 1-2.5-6 10.5 10.5 0 0 1 2.5-6z"/>
+                </svg>
+              </>
+            ) : (
+              <>
+                {/* Globe icon */}
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="8" cy="8" r="6"/>
+                  <path d="M2 8h12M8 2a10.5 10.5 0 0 1 2.5 6 10.5 10.5 0 0 1-2.5 6 10.5 10.5 0 0 1-2.5-6 10.5 10.5 0 0 1 2.5-6z"/>
+                </svg>
+                {/* Arrow on RIGHT when not expanded */}
+                <span
+                  className="inline-block rotate-[-45deg] border-r-2 border-b-2 p-[2px]"
+                  style={{ borderColor: colors.text }}
+                />
+              </>
+            )}
+          </a>
         </div>
+        </div>
+
       </div>
     </div>
   );
