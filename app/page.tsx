@@ -13,9 +13,9 @@ export default function Home() {
     switch (theme) {
       case 'light':
         return {
-          bg: '#FFFFFF',
-          text: '#000000',
-          patternColor: '#000000',
+          bg: '#F5F5F5',
+          text: '#1a1a1a',
+          patternColor: '#333333',
           linkHover: 'hover:opacity-50',
         };
       case 'green':
@@ -72,7 +72,7 @@ export default function Home() {
               Ilia Alenabi
             </h1>
             <p className="text-base md:text-lg leading-relaxed mt-2 font-sans opacity-80">
-              CS at Waterloo | MLE at Cerebras
+              CS @ UWaterloo | MLE @ Cerebras
             </p>
           </div>
         </div>
@@ -187,7 +187,7 @@ export default function Home() {
           </ul>
         </div>
 
-        <div className="flex gap-6 flex-wrap">
+        <div className="flex gap-6 flex-wrap justify-center">
           <a
             href="https://github.com/iliall"
             target="_blank"
