@@ -57,12 +57,20 @@ export default function Home() {
         height: currentHeight
       };
 
-      // Only set explicit WIDTH, not height
-      // Setting explicit height causes contentRef with h-full to reflow
-      containerRef.current.style.width = `${currentWidth}px`;
+      // Temporarily disable transitions to prevent flash during dimension locking
+      const originalTransition = containerRef.current.style.transition;
+      containerRef.current.style.transition = 'none';
 
-      // Force a reflow to ensure the explicit width is applied
+      // Set explicit width AND height to lock current size
+      // Note: We need to lock both to ensure smooth synchronized transitions
+      containerRef.current.style.width = `${currentWidth}px`;
+      containerRef.current.style.height = `${currentHeight}px`;
+
+      // Force a reflow to ensure the explicit dimensions are applied
       containerRef.current.offsetHeight;
+
+      // Re-enable transitions
+      containerRef.current.style.transition = originalTransition;
 
       // Use requestAnimationFrame to ensure the browser has painted the current state
       // before we trigger the expansion. This creates a smooth transition.
@@ -201,7 +209,7 @@ export default function Home() {
       >
         <div
           ref={contentRef}
-          className="flex flex-col h-full"
+          className={`flex flex-col ${isExpanded ? 'h-full' : ''}`}
         >
         <div className={`transition-opacity duration-500 ${isExpanded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
         <div className="flex items-center gap-4 mb-6">
