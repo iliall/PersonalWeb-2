@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import DitherPattern from '@/components/DitherPattern';
 import ThemeSwitcher, { Theme } from '@/components/ThemeSwitcher';
@@ -11,27 +11,80 @@ export default function Home() {
   const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const collapsedDimensionsRef = useRef<{ width: number; height: number } | null>(null);
+  const activeTimeoutsRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const transitionEndHandlerRef = useRef<((e: TransitionEvent) => void) | null>(null);
+
+  // Cleanup timeouts and event listeners on unmount
+  useEffect(() => {
+    return () => {
+      // Clear all active timeouts
+      activeTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      activeTimeoutsRef.current.clear();
+
+      // Remove any active transitionend listener
+      if (transitionEndHandlerRef.current && containerRef.current) {
+        containerRef.current.removeEventListener('transitionend', transitionEndHandlerRef.current);
+        transitionEndHandlerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Helper to remove any existing transitionend listener
+  const removeOldTransitionListener = () => {
+    if (transitionEndHandlerRef.current && containerRef.current) {
+      containerRef.current.removeEventListener('transitionend', transitionEndHandlerRef.current);
+      transitionEndHandlerRef.current = null;
+    }
+  };
 
   const handleExpand = () => {
     if (containerRef.current) {
-      // Capture current dimensions before expanding
+      // Clear any pending timeouts from previous collapse
+      activeTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      activeTimeoutsRef.current.clear();
+
+      // Remove any existing transitionend listener from previous operations
+      removeOldTransitionListener();
+
+      // Capture current (collapsed) dimensions before expanding
       const currentHeight = containerRef.current.offsetHeight;
       const currentWidth = containerRef.current.offsetWidth;
 
-      // Set explicit dimensions
-      containerRef.current.style.width = `${currentWidth}px`;
-      containerRef.current.style.height = `${currentHeight}px`;
+      // Save these dimensions so we can restore them when collapsing
+      collapsedDimensionsRef.current = {
+        width: currentWidth,
+        height: currentHeight
+      };
 
-      // Force a reflow
+      // Only set explicit WIDTH, not height
+      // Setting explicit height causes contentRef with h-full to reflow
+      containerRef.current.style.width = `${currentWidth}px`;
+
+      // Force a reflow to ensure the explicit width is applied
       containerRef.current.offsetHeight;
 
-      // Now expand
-      setIsExpanded(true);
+      // Use requestAnimationFrame to ensure the browser has painted the current state
+      // before we trigger the expansion. This creates a smooth transition.
+      requestAnimationFrame(() => {
+        setIsExpanded(true);
+        // Note: We don't clean up explicit styles here. When React re-renders with
+        // isExpanded=true, it will apply inline styles (85vw x 80vh) via the style prop,
+        // which will overwrite our explicit dimensions and trigger the CSS transition.
+        // Those React-controlled inline styles should remain for the expanded state.
+      });
     }
   };
 
   const handleCollapse = () => {
-    if (containerRef.current && contentRef.current) {
+    if (containerRef.current && collapsedDimensionsRef.current) {
+      // Clear any pending timeouts from previous operations
+      activeTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      activeTimeoutsRef.current.clear();
+
+      // Remove any existing transitionend listener from previous operations
+      removeOldTransitionListener();
+
       // Step 1: Capture current expanded dimensions
       const expandedWidth = containerRef.current.offsetWidth;
       const expandedHeight = containerRef.current.offsetHeight;
@@ -43,40 +96,43 @@ export default function Home() {
       // Force reflow to ensure styles are applied
       containerRef.current.offsetHeight;
 
-      // Step 3: Make content visible to measure natural size
-      const currentOpacity = contentRef.current.style.opacity;
-      contentRef.current.style.opacity = '1';
-      contentRef.current.style.pointerEvents = 'auto';
-
-      // Step 4: Measure natural content dimensions
-      const naturalHeight = contentRef.current.offsetHeight;
-      const naturalWidth = contentRef.current.offsetWidth;
-
-      // Restore original opacity
-      contentRef.current.style.opacity = currentOpacity;
-      contentRef.current.style.pointerEvents = '';
-
-      // Step 5: Calculate target dimensions with padding
-      const targetWidth = Math.min(naturalWidth + 80, 800);
-      const targetHeight = naturalHeight + 64;
+      // Step 3: Use the saved collapsed dimensions (captured when we expanded)
+      // This ensures we return to EXACTLY the same size we started from
+      const targetWidth = collapsedDimensionsRef.current.width;
+      const targetHeight = collapsedDimensionsRef.current.height;
 
       // Step 6: Start the transition
       requestAnimationFrame(() => {
         if (containerRef.current) {
+          // Set up transitionend listener to clean up explicit styles
+          const handleTransitionEnd = (e: TransitionEvent) => {
+            // Only respond to width/height transitions (not other properties)
+            if (e.propertyName === 'width' || e.propertyName === 'height') {
+              if (containerRef.current) {
+                containerRef.current.style.width = '';
+                containerRef.current.style.height = '';
+                // Remove the listener after cleanup
+                containerRef.current.removeEventListener('transitionend', handleTransitionEnd);
+                transitionEndHandlerRef.current = null;
+              }
+            }
+          };
+
+          // Track the listener so we can remove it if needed
+          transitionEndHandlerRef.current = handleTransitionEnd;
+          containerRef.current.addEventListener('transitionend', handleTransitionEnd);
+
           // Set target dimensions (CSS transition will animate this)
           containerRef.current.style.width = `${targetWidth}px`;
           containerRef.current.style.height = `${targetHeight}px`;
 
-          // Also trigger content fade-in
-          setIsExpanded(false);
-
-          // Step 7: Clean up explicit styles after transition
-          setTimeout(() => {
-            if (containerRef.current) {
-              containerRef.current.style.width = '';
-              containerRef.current.style.height = '';
-            }
-          }, 500);
+          // Step 7: Trigger content fade-in near the end of collapse (at 80% completion)
+          // This prevents content from being visible while container is still large
+          const fadeInTimeout = setTimeout(() => {
+            setIsExpanded(false);
+            activeTimeoutsRef.current.delete(fadeInTimeout);
+          }, 400);
+          activeTimeoutsRef.current.add(fadeInTimeout);
         }
       });
     }
@@ -343,10 +399,12 @@ export default function Home() {
             />
           </a>
 
-          <a
+          <button
+            type="button"
             onClick={isExpanded ? handleCollapse : handleExpand}
-            className={`text-sm md:text-base flex items-center gap-2 no-underline transition-opacity duration-300 cursor-pointer ${colors.linkHover}`}
+            className={`text-sm md:text-base flex items-center gap-2 no-underline transition-opacity duration-300 cursor-pointer bg-transparent border-none p-0 ${colors.linkHover}`}
             style={{ color: colors.text }}
+            aria-label={isExpanded ? "Collapse content" : "Expand content"}
           >
             {isExpanded ? (
               <>
@@ -375,7 +433,7 @@ export default function Home() {
                 />
               </>
             )}
-          </a>
+          </button>
         </div>
         </div>
 
