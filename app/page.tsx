@@ -265,6 +265,23 @@ export default function Home() {
               style={{ borderColor: colors.text }}
             />
           </a>
+
+          <a
+            href="/resume.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`text-sm md:text-base flex items-center gap-2 no-underline transition-opacity duration-300 ${colors.linkHover}`}
+            style={{ color: colors.text }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zM10 4a1 1 0 0 1-1-1V1.5L13.5 6H11a1 1 0 0 1-1-1V4z"/>
+              <path d="M4.5 12.5A.5.5 0 0 1 5 12h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 10h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zm0-2A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5z"/>
+            </svg>
+            <span
+              className="inline-block rotate-[-45deg] border-r-2 border-b-2 p-[2px] ml-[2px]"
+              style={{ borderColor: colors.text }}
+            />
+          </a>
         </div>
       </div>
     </div>
